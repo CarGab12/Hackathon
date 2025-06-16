@@ -6,9 +6,7 @@ const routes = express.Router();
 
 routes.get('/eventos', EventoController.index);
 routes.get('/eventos/:id', EventoController.show);
-
-
+routes.post('/usuarios', UsuarioController.store);
 routes.get('/usuarios', UsuarioController.index);
-routes.post('/usuarios', UsuarioController.create);
 
 module.exports = routes;
