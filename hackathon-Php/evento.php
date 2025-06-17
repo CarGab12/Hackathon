@@ -31,18 +31,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     curl_close($ch);
 
     if ($httpCode === 201) {
-        $mensagem = "✅ Inscrição realizada com sucesso!";
+        $mensagem = "Inscrição realizada com sucesso!";
         header("Location: evento.php?evento=$evento_id&inscrito=" . urlencode($mensagem));
         exit;
     } elseif ($httpCode === 400) {
         $erro = json_decode($resposta, true);
         $mensagemApi = $erro['mensagem'] ?? "";
 
-        $mensagem = $mensagemApi !== "" ? htmlspecialchars($mensagemApi) : "⚠️ Este CPF já está inscrito em outro evento no mesmo horário.";
+        $mensagem = $mensagemApi !== "" ? htmlspecialchars($mensagemApi) : "Este CPF já está inscrito nesse evento ou em um evento neste horário";
         header("Location: evento.php?evento=$evento_id&inscrito=" . urlencode($mensagem));
         exit;
     } else {
-        $mensagem = "❌ Erro ao se inscrever. Código: $httpCode";
+        $mensagem = "Erro ao se inscrever. Código: $httpCode";
         header("Location: evento.php?evento=$evento_id&inscrito=" . urlencode($mensagem));
         exit;
     }

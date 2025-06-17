@@ -5,39 +5,58 @@ if (!$inscricao) {
     die("Número de inscrição não informado.");
 }
 
-$conn = new mysqli("localhost", "root", "", "hackathon");
-if ($conn->connect_error) {
-    die("Erro ao conectar: " . $conn->connect_error);
+$apiUrl = "http://localhost:3000/api/certificado/" . urlencode($inscricao);
+
+$response = file_get_contents($apiUrl);
+
+if ($response === false) {
+    die("Erro ao conectar com a API.");
 }
 
-$sql = "
-    SELECT u.nome AS aluno, e.nomeEvento AS evento, e.local, e.data_hora
-    FROM usuarios u
-    JOIN eventos e ON e.id = u.evento_id
-    WHERE u.inscricao = ?
-";
+$data = json_decode($response, true);
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $inscricao);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows === 0) {
-    echo "<h3>Inscrição não encontrada.</h3>";
-    exit;
+if (!$data) {
+    die("Resposta inválida da API.");
 }
 
-$dados = $result->fetch_assoc();
-$data = date("d/m/Y", strtotime($dados['data_hora']));
+if (isset($data['erro'])) {
+    die("<h3>" . htmlspecialchars($data['erro']) . "</h3>");
+}
 
-echo "
-    <div style='max-width: 700px; margin: 50px auto; padding: 30px; border: 1px solid #ccc; font-family: sans-serif;'>
-        <h2 style='text-align: center;'>Certificado de Participação</h2>
-        <p style='text-align: center; margin-top: 40px;'>Certificamos que <strong>{$dados['aluno']}</strong> participou do evento <strong>{$dados['evento']}</strong>, realizado em <strong>{$dados['local']}</strong> no dia <strong>{$data}</strong>.</p>
-        <br><br><br>
-        <p style='text-align: center;'>____________________________________<br>Organização do Evento</p>
-    </div>
-";
+$dataEvento = date("d/m/Y", strtotime($data['data_hora']));
 
-$conn->close();
 ?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Certificado de Participação</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 50px auto;
+      padding: 30px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 40px;
+    }
+    .assinatura {
+      margin-top: 80px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Certificado de Participação</h2>
+  <p>Certificamos que <strong><?= htmlspecialchars($data['aluno']) ?></strong> participou do evento <strong><?= htmlspecialchars($data['evento']) ?></strong>, realizado em <strong><?= htmlspecialchars($data['local']) ?></strong> no dia <strong><?= $dataEvento ?></strong>.</p>
+
+  <div class="assinatura">
+    ____________________________________<br>
+    Organização do Evento
+  </div>
+</body>
+</html>

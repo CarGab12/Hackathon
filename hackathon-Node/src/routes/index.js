@@ -8,5 +8,7 @@ routes.get('/eventos', EventoController.index);
 routes.get('/eventos/:id', EventoController.show);
 routes.post('/usuarios', UsuarioController.store);
 routes.get('/usuarios', UsuarioController.index);
+routes.get('/certificado/:id', UsuarioController.certificado);
+
 
 module.exports = routes;

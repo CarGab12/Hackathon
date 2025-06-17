@@ -11,7 +11,7 @@ module.exports = {
 
     if (usuarioExistente) {
       return res.status(400).json({
-        mensagem: 'Este CPF já está inscrito em um evento neste horário'
+        mensagem: 'Este CPF já está inscrito nesse evento ou em um evento neste horário'
       });
     }
 
@@ -32,5 +32,32 @@ module.exports = {
   async index(req, res) {
     const usuarios = await connection('usuarios').select('*');
     res.json(usuarios);
+  },
+
+
+  async certificado(req, res) {
+    const { id } = req.params;
+
+    try {
+      const usuario = await connection('usuarios')
+        .join('eventos', 'eventos.id', 'usuarios.evento_id')
+        .where('usuarios.inscricao', id)
+        .select(
+          'usuarios.nome as aluno',
+          'eventos.nomeEvento as evento',
+          'eventos.local',
+          'eventos.data_hora'
+        )
+        .first();
+
+      if (!usuario) {
+        return res.status(404).json({ erro: 'Inscrição não encontrada' });
+      }
+
+      res.json(usuario);
+    } catch (error) {
+      console.error('Erro ao buscar inscrição:', error);
+      res.status(500).json({ erro: 'Erro interno no servidor' });
+    }
   }
 };
